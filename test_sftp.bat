@@ -31,27 +31,24 @@ if not exist "%SOURCE_DIR%" (
 	exit /b 1
 )
 
-REM Création du dossier pour les fichiers transférés si inexistant
-if not exist "%ARCHIVE_DIR%" (
-    mkdir "%ARCHIVE_DIR%"
+REM Test d'envoi d'un fichier
+set FICH_TEST=test.txt
+
+echo Contenu > %FICH_TEST%
+echo Envoi du fichier %FICH_TEST% ...
+echo sftp -b - %SFTP_COMMAND%:%DEST_DIR%
+(
+    echo put %FICH_TEST%
+    echo bye
+) | sftp -b - %SFTP_COMMAND%:%DEST_DIR%
+
+REM Vérification du succès du transfert
+if errorlevel 1 (
+    echo Echec de l'envoi
+) else (
+    echo Transfert reussi
 )
 
-REM Parcours des fichiers dans le dossier local
-for %%F in ("%SOURCE_DIR%\%FILENAME_MASK%") do (
-    echo Envoi du fichier %%F ...
-	echo sftp -b - %SFTP_COMMAND%:%DEST_DIR%
-    (
-        echo put "%%F"
-        echo bye
-    ) | sftp -b - %SFTP_COMMAND%:%DEST_DIR% >> "%LOG_FILE%" 2>&1
+echo rm %DEST_DIR%/%FICH_TEST% | sftp -b - %SFTP_COMMAND%
 
-    REM Vérification du succès du transfert
-    if errorlevel 1 (
-        echo Échec de l'envoi de %%~nxF >> "%LOG_FILE%"
-    ) else (
-        echo Transfert réussi : %%~nxF >> "%LOG_FILE%"
-        move "%%F" "%ARCHIVE_DIR%"
-    )
-)
-
-echo Transfert termine. Consultez le fichier log ici : %LOG_FILE%
+pause

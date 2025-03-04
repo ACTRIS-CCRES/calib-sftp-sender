@@ -17,7 +17,7 @@ set DEST_DIR=data
 set FILENAME_MASK=*.nc
 set LOG_FILE="%SCRIPT_DIR%\sftp_transfer.log"
 rem Si SIMUL est vide ou non déclarée, le code s'exécute totalement sinon les actions principales ne sont pas exécutées
-set SIMUL=simul
+set SIMUL=
 
 rem pour test. A commenter pour la production
 set SOURCES_LIST=%SCRIPT_DIR%\data

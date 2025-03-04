@@ -30,7 +30,7 @@ if not exist %CONFIDENTIEL% (
 
 rem Lecture des données confidentielles
 :: usebackq permet d'avoir des espaces dans le nom (chemin) du fichier
-for /f "usebackq tokens=1* delims==" %%A in (%CONFIDENTIEL%) do (
+for /f "usebackq tokens=1,* delims==" %%A in (%CONFIDENTIEL%) do (
     set "%%A=%%B"
 )
 
@@ -69,9 +69,9 @@ for /f "tokens=1,* delims=%SEP%" %%D IN ("%SOURCES_LIST%") do (
         ) 
         :: Vérification du succès du transfert
         if errorlevel 1 (
-            call :echo_log Echec de l'envoi de '%%~nxF' >> %LOG_FILE%
+            call :echo_log Echec de l'envoi de '%%~nxF'
         ) else (
-            call :echo_log Transfert réussi : %%~nxF >> %LOG_FILE%
+            call :echo_log Transfert réussi : %%~nxF
             set archive_dir="%source_dir%\archives"
             if not exist !archive_dir! if not defined SIMUL mkdir !archive_dir!
             call :echo_log Archivage du fichier %%~nxF dans !archive_dir!

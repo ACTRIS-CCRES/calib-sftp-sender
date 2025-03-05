@@ -1,42 +1,46 @@
 @echo off
+
 :: Configuration des paramètres
-rem A renseigner
+rem Informations se trouvant dans le fichier confidentiel.txt
+rem chaque ligne du fichier a la forme : variable=valeur
 set SERVER=
 set USERNAME=
-set PASS=
-set SCRIPT_DIR=%cd%
-set SOURCE_DIR=e:\basta\sirta_TR\
-set DEST_DIR=data
-set ARCHIVE_DIR=C:\chemin\vers\archive
-set FILENAME_MASK=*.txt
-set LOG_FILE=%SCRIPT_DIR%\sftp_transfer.log
+rem	Doit être placée dans le sous-dossier .ssh\ du répertoire d'accueil de la session en cours
 set SSH_KEY=
+::
+set SCRIPT_DIR=%cd%
+set CONFIDENTIEL="%SCRIPT_DIR%\confidentiel.txt"
+set SOURCE_DIR="%SCRIPT_DIR%\data"
+set DEST_DIR=data
 
-rem pour test. A commenter pour la production
-set SOURCE_DIR=%SCRIPT_DIR%\data
-set ARCHIVE_DIR=%SCRIPT_DIR%\data\archive
+if not exist %CONFIDENTIEL% (
+    echo Le fichier %CONFIDENTIEL% n'existe pas
+    exit /b 1
+)
 
-rem set SFTP_COMMAND=-i "%SSH_KEY%" %USERNAME%@%SERVER%
+rem Lecture des données confidentielles
+:: usebackq permet d'avoir des espaces dans le nom (chemin) du fichier
+for /f "usebackq tokens=1,* delims==" %%A in (%CONFIDENTIEL%) do (
+    set "%%A=%%B"
+)
+
 set SFTP_COMMAND=%USERNAME%@%SERVER%
 
-REM Vérification que la clé existe
-rem if not exist "%SSH_KEY%" (
-rem    echo La clé SSH spécifiée n'existe pas : %SSH_KEY%
-rem	echo Elle doit être placée dans le sous-dossier .ssh du répertoire d'accueil de la session en cours
-rem    exit /b 1
-rem )
+setlocal enabledelayedexpansion
 
-if not exist "%SOURCE_DIR%" (
+if not exist %SOURCE_DIR% (
     echo Le dossier source '%SOURCE_DIR%' n'existe pas
 	exit /b 1
 )
 
 REM Test d'envoi d'un fichier
-set FICH_TEST=test.txt
+set NOM_FICH_TEST=test.txt
+set FICH_TEST=%SOURCE_DIR%\%NOM_FICH_TEST%
 
 echo Contenu > %FICH_TEST%
 echo Envoi du fichier %FICH_TEST% ...
 echo sftp -b - %SFTP_COMMAND%:%DEST_DIR%
+
 (
     echo put %FICH_TEST%
     echo bye
@@ -49,6 +53,7 @@ if errorlevel 1 (
     echo Transfert reussi
 )
 
-echo rm %DEST_DIR%/%FICH_TEST% | sftp -b - %SFTP_COMMAND%
+del %FICH_TEST%
+echo rm %DEST_DIR%/%NOM_FICH_TEST% | sftp -b - %SFTP_COMMAND%
 
 pause
